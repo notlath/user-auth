@@ -1,66 +1,85 @@
 import { signOut } from "firebase/auth";
-import React from "react";
-import { Alert, StyleSheet, Text, TouchableOpacity, View } from "react-native";
+import React, { useState } from "react";
+import { Alert, Text, Pressable, ActivityIndicator } from "react-native";
 import auth from "./firebase";
+import SafeAreaWrapper from "./SafeAreaWrapper";
 
-const LoggedInScreen = ({ navigation }) => {
+const LoggedInScreen = ({ navigation }: any) => {
   const user = auth.currentUser;
+  const [isLoading, setIsLoading] = useState(false);
 
-  const handleLogout = () => {
+  const handleSignOut = () => {
+    setIsLoading(true);
+
     signOut(auth)
       .then(() => {
-        Alert.alert("Logged out", "You have been successfully logged out.");
-        navigation.replace("Login"); // Redirect to login screen
+        setTimeout(() => {
+          setIsLoading(false);
+          Alert.alert("Logged out", "You have been successfully logged out.");
+          navigation.replace("Home");
+        }, 1000);
       })
       .catch((error) => {
+        setIsLoading(false);
         Alert.alert("Logout failed", error.message);
       });
   };
 
   return (
-    <View style={styles.container}>
-      <Text style={styles.title}>Welcome, {user?.email}!</Text>
-      <Text style={styles.subtitle}>You are successfully logged in.</Text>
-
-      <TouchableOpacity onPress={handleLogout} style={styles.logoutButton}>
-        <Text style={styles.logoutButtonText}>Log Out</Text>
-      </TouchableOpacity>
-    </View>
+    <SafeAreaWrapper
+      style={{
+        paddingHorizontal: 16,
+        justifyContent: "center",
+        alignItems: "center",
+        gap: 8,
+      }}
+    >
+      <Text
+        style={{
+          fontSize: 28,
+          color: "#ffffff",
+          textAlign: "center",
+          fontFamily: "IBMPlexSans_700Bold",
+        }}
+      >
+        Welcome to the app, {user?.displayName}!
+      </Text>
+      <Text
+        style={{
+          fontSize: 16,
+          color: "#81A4CD",
+          textAlign: "center",
+          fontFamily: "IBMPlexSans_400Regular",
+        }}
+      >
+        Email: {user?.email}
+      </Text>
+      <Pressable
+        onPress={handleSignOut}
+        style={{
+          backgroundColor: "#FF810A",
+          padding: 16,
+          borderRadius: 8,
+          alignItems: "center",
+          marginTop: 32,
+          width: 150,
+        }}
+      >
+        {!isLoading ? (
+          <Text
+            style={{
+              color: "#04252c",
+              fontFamily: "IBMPlexSans_500Medium",
+            }}
+          >
+            Log out
+          </Text>
+        ) : (
+          <ActivityIndicator color="#04252c" />
+        )}
+      </Pressable>
+    </SafeAreaWrapper>
   );
 };
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: "#fff",
-    alignItems: "center",
-    justifyContent: "center",
-    padding: 20,
-  },
-  title: {
-    fontSize: 24,
-    fontWeight: "bold",
-    marginBottom: 10,
-    color: "#333",
-  },
-  subtitle: {
-    fontSize: 16,
-    color: "#666",
-    marginBottom: 30,
-  },
-  logoutButton: {
-    backgroundColor: "#456FE8",
-    paddingHorizontal: 20,
-    paddingVertical: 15,
-    borderRadius: 5,
-    width: "100%",
-    alignItems: "center",
-  },
-  logoutButtonText: {
-    color: "#fff",
-    fontSize: 16,
-    fontWeight: "600",
-  },
-});
 
 export default LoggedInScreen;
